@@ -11,4 +11,5 @@ export default defineConfig({
       "@": resolve(import.meta.dirname, "./src"),
     },
   },
+  base: "/ishinomaki_hackathon2026/",
 })
