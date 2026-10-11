@@ -6,45 +6,33 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog.tsx"
 import { Button } from "@/components/ui/button.tsx"
-import { BadgeCheckIcon, ChevronRightIcon, Plus, PlusCircle, UserGroup, Users } from "lucide-react"
+import {PlusCircle, UserGroup, Users } from "lucide-react"
 import { Field, FieldGroup } from "@/components/ui/field.tsx"
 import { Input } from "@/components/ui/input.tsx"
 import { Label } from "@/components/ui/label.tsx"
 import { useState } from "react"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table.tsx"
-import { UserTip } from "@/components/user_tip.tsx"
-import { type Guild, useGuildsState } from "@/states/guilds.ts"
+import { type Guild } from "@/states/guilds.ts"
 import type { User } from "@/states/users.ts"
 import {
   Item,
   ItemActions,
   ItemContent,
   ItemDescription,
-  ItemMedia,
   ItemTitle,
 } from "@/components/ui/item.tsx"
 import {
   Card,
-  CardAction,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card.tsx"
 
-export function GuildsTable(props: {guilds: Guild[], localUser: User | null, openGuild: (guild_id: string) => void}) {
+export function GuildsTable(props: {guilds: Guild[], localUser: User | null, openGuild: (guild_id: string) => void, createGuild: (name: string) => void, joinGuild: (invitation: string) => void}) {
   const [createGuildDialogOpen, setCreateGuildDialogOpen] = useState<boolean>(false);
   const [guildName, setGuildName] = useState<string>("");
+  const [guildInvitation, setGuildInvitation] = useState<string>("");
   const [joinGuildDialogOpen, setJoinGuildDialogOpen] = useState<boolean>(false);
-  const guilds = useGuildsState();
 
   return (
     <div className="m-6">
@@ -111,6 +99,7 @@ export function GuildsTable(props: {guilds: Guild[], localUser: User | null, ope
               type="submit"
               disabled={guildName.length === 0}
               onClick={() => {
+                props.createGuild(guildName)
                 setCreateGuildDialogOpen(false)
               }}
             >
@@ -129,8 +118,8 @@ export function GuildsTable(props: {guilds: Guild[], localUser: User | null, ope
                 <Input
                   id="guildcode"
                   name="guildcode"
-                  value={guildName}
-                  onChange={(e) => setGuildName(e.target.value)}
+                  value={guildInvitation}
+                  onChange={(e) => setGuildInvitation(e.target.value)}
                 />
               </Field>
             </FieldGroup>
@@ -138,7 +127,10 @@ export function GuildsTable(props: {guilds: Guild[], localUser: User | null, ope
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setJoinGuildDialogOpen(false)}
+              onClick={() => {
+                props.joinGuild(guildInvitation)
+                setJoinGuildDialogOpen(false)
+              }}
             >
               キャンセル
             </Button>
@@ -159,7 +151,7 @@ export function GuildsTable(props: {guilds: Guild[], localUser: User | null, ope
         <h1 className="my-3 text-lg font-bold">参加中のギルド</h1>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-        {guilds.guilds.map((guild: Guild) => (
+        {props.guilds.map((guild: Guild) => (
           <Card>
             <CardHeader>
               <CardTitle>{guild.name}</CardTitle>
@@ -169,7 +161,7 @@ export function GuildsTable(props: {guilds: Guild[], localUser: User | null, ope
               <div className="flex grow gap-3">
                 <Users /> {guild.member_count}人のメンバー
               </div>
-              <Button>開く</Button>
+              <Button onClick={() => props.openGuild(guild.id)}>開く</Button>
             </CardFooter>
           </Card>
         ))}
