@@ -6,18 +6,20 @@ import { useUsersState } from "@/states/users.ts"
 import { Login } from "@/login.tsx"
 
 type View =
-  {type: "selectGuilds"} |
+  {type: "home"} |
   {type: "auth"} |
-  {type: "guildView", guild_uuid: string};
+  {type: "guildView", guild_uuid: string} |
+  {type: "profile"} |
+  {type: "guildConfig", guild_uuid: string};
 
 export function App() {
   const guildsState = useGuildsState();
   const usersState = useUsersState();
-  const [nowView, updateNowView] = useState<View>({type: "selectGuilds"});
+  const [nowView, updateNowView] = useState<View>({type: "home"});
 
   return (
     <div>
-      {nowView.type === "selectGuilds" && (
+      {nowView.type === "home" && (
         <div>
           <GuildsTable guilds={guildsState.guilds} localUser={usersState.me} openGuild={(guild) => updateNowView({type: "guildView", guild_uuid: guild})} />
         </div>
