@@ -21,7 +21,13 @@ export function App() {
     <div>
       {nowView.type === "home" && (
         <div>
-          <GuildsTable guilds={guildsState.guilds} localUser={usersState.me} openGuild={(guild) => updateNowView({type: "guildView", guild_uuid: guild})} />
+          <GuildsTable
+            guilds={guildsState.guilds}
+            localUser={usersState.me}
+            openGuild={(guild) => updateNowView({type: "guildView", guild_uuid: guild})}
+            createGuild={(name) => guildsState.addNewGuild(name)}
+            joinGuild={(id) => guildsState.joinGuildBySecretUuid(id)}
+          />
         </div>
       )}
       {nowView.type === "auth" &&

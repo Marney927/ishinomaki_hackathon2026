@@ -6,6 +6,7 @@ export interface GuildsState {
   guilds: Guild[]
   addNewGuild: (name: string) => Promise<void>
   editGuildName: (id: number, name: string) => Promise<void>
+  joinGuildBySecretUuid: (uuid: string) => Promise<void>
   deleteGuild: (id: number) => Promise<void>
 }
 
@@ -13,6 +14,7 @@ export const useGuildsState = create<GuildsState>((set, get) => ({
   guilds: [],
   addNewGuild: async (name: string) => {},
   editGuildName: async (id: number, name: string) => {},
+  joinGuildBySecretUuid: async (uuid: string) => {},
   deleteGuild: async (id: number) => {},
 }))
 
