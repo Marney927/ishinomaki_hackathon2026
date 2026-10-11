@@ -3,7 +3,7 @@ import { useState } from "react"
 import { GuildsTable } from "@/components/guilds_table.tsx"
 import { useGuildsState } from "@/states/guilds.ts"
 import { useUsersState } from "@/states/users.ts"
-import { Login } from "@/Login.tsx"
+import { Login } from "@/login.tsx"
 
 type View =
   {type: "selectGuilds"} |
