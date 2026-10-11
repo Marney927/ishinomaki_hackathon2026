@@ -25,9 +25,7 @@ export function App() {
         </div>
       )}
       {nowView.type === "auth" &&
-        <div className="grid place-items-center w-full h-screen">
-          <Login />
-        </div>
+        <Login />
       }
     </div>
   )
