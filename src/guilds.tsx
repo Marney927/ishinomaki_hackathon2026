@@ -162,12 +162,12 @@ export function GuildsTable(props: {guilds: Guild[], localUser: User | null, ope
         {guilds.guilds.map((guild: Guild) => (
           <Card>
             <CardHeader>
-              <CardTitle>Name</CardTitle>
-              <CardDescription>description</CardDescription>
+              <CardTitle>{guild.name}</CardTitle>
+              <CardDescription>{guild.description}</CardDescription>
             </CardHeader>
             <CardFooter className="w-full">
               <div className="flex grow gap-3">
-                <Users /> {}人のメンバー
+                <Users /> {guild.member_count}人のメンバー
               </div>
               <Button>開く</Button>
             </CardFooter>

@@ -1,6 +1,6 @@
 import "./index.css"
 import { useState } from "react"
-import { GuildsTable } from "@/components/guilds_table.tsx"
+import { GuildsTable } from "@/guilds.tsx"
 import { useGuildsState } from "@/states/guilds.ts"
 import { useUsersState } from "@/states/users.ts"
 import { Login } from "@/login.tsx"
@@ -15,7 +15,7 @@ type View =
 export function App() {
   const guildsState = useGuildsState();
   const usersState = useUsersState();
-  const [nowView, updateNowView] = useState<View>({type: "auth"});
+  const [nowView, updateNowView] = useState<View>({type: "home"});
 
   return (
     <div>
