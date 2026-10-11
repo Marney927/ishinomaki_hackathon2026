@@ -15,7 +15,7 @@ type View =
 export function App() {
   const guildsState = useGuildsState();
   const usersState = useUsersState();
-  const [nowView, updateNowView] = useState<View>({type: "home"});
+  const [nowView, updateNowView] = useState<View>({type: "auth"});
 
   return (
     <div>
