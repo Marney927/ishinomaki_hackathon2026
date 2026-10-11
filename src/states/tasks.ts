@@ -26,4 +26,5 @@ export type Task = {
   owner: User
   status: string
   is_published: boolean
+  participants: User[],
 }

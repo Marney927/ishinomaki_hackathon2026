@@ -3,6 +3,7 @@ import { useState } from "react"
 import { GuildsTable } from "@/guilds.tsx"
 import { Login } from "@/login.tsx"
 import { Profile } from "@/profile.tsx"
+import { Tasks } from "@/tasks.tsx"
 
 type View =
   {type: "home"} |
@@ -12,7 +13,7 @@ type View =
   {type: "guildConfig", guild_uuid: string};
 
 export function App() {
-  const [nowView, updateNowView] = useState<View>({type: "profile"});
+  const [nowView, updateNowView] = useState<View>({type: "guildView", guild_uuid: ""});
 
   return (
     <div>
@@ -26,6 +27,9 @@ export function App() {
       }
       {nowView.type === "profile" && (
         <Profile />
+      )}
+      {nowView.type === "guildView" && (
+        <Tasks guildId={nowView.guild_uuid} />
       )}
     </div>
   )
