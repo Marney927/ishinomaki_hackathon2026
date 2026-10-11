@@ -2,6 +2,7 @@ import { create } from "zustand/react"
 import type { User } from "@/states/users.ts"
 
 export interface GuildsState {
+
   guilds: Guild[]
   addNewGuild: (name: string) => Promise<void>
   editGuildName: (id: number, name: string) => Promise<void>
@@ -19,4 +20,6 @@ export type Guild = {
   id: string
   name: string
   owner: User
+  description: string
+  member_count: number
 }
