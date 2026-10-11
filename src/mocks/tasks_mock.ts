@@ -54,8 +54,9 @@ export const tasks: Task[] = [
     description: "PostgreSQL用のテーブル定義およびインデックス設計を行う。",
     due_date: new Date("2026-10-15T09:00:00Z"),
     owner: commonUser1,
-    status: "IN_PROGRESS",
+    status: "進行中",
     is_published: true,
+    participants: [commonUser1, commonUser2]
   },
   {
     id: "tsk_02",
@@ -64,8 +65,9 @@ export const tasks: Task[] = [
     description: "OAuth 2.0を利用したログイン処理の実装および単体テスト。",
     due_date: new Date("2026-10-20T18:00:00Z"),
     owner: commonUser1,
-    status: "TODO",
+    status: "進行中",
     is_published: true,
+    participants: [commonUser1, commonUser5]
   },
   {
     id: "tsk_03",
@@ -74,8 +76,9 @@ export const tasks: Task[] = [
     description: "GitHub Actionsによる自動テスト実行環境を構築する。",
     due_date: new Date("2026-10-25T12:00:00Z"),
     owner: commonUser1,
-    status: "TODO",
+    status: "未着手",
     is_published: false,
+    participants: [commonUser1]
   },
   {
     id: "tsk_04",
@@ -84,8 +87,9 @@ export const tasks: Task[] = [
     description: null,
     due_date: null,
     owner: commonUser1,
-    status: "BACKLOG",
+    status: "保留",
     is_published: false,
+    participants: [commonUser1]
   },
   {
     id: "tsk_05",
@@ -94,8 +98,9 @@ export const tasks: Task[] = [
     description: "デザインシステムに準拠したコンポーネントライブラリの評価。",
     due_date: new Date("2026-10-12T15:00:00Z"),
     owner: commonUser2,
-    status: "DONE",
+    status: "完了",
     is_published: true,
+    participants: [commonUser2, commonUser3, commonUser6]
   },
   {
     id: "tsk_06",
@@ -104,8 +109,9 @@ export const tasks: Task[] = [
     description: "ビューポート変更時の描画崩れに関する検証。",
     due_date: new Date("2026-10-18T10:00:00Z"),
     owner: commonUser2,
-    status: "IN_PROGRESS",
+    status: "進行中",
     is_published: true,
+    participants: [commonUser1, commonUser2]
   },
   {
     id: "tsk_07",
@@ -114,8 +120,9 @@ export const tasks: Task[] = [
     description: "Playwrightを使用した主要ユースケースのE2Eテスト実装。",
     due_date: new Date("2026-10-30T17:00:00Z"),
     owner: commonUser3,
-    status: "TODO",
+    status: "未着手",
     is_published: true,
+    participants: [commonUser3]
   },
   {
     id: "tsk_08",
@@ -124,8 +131,9 @@ export const tasks: Task[] = [
     description: "依存パッケージの脆弱性スキャンおよびレポート出力。",
     due_date: null,
     owner: commonUser4,
-    status: "TODO",
+    status: "未着手",
     is_published: false,
+    participants: [commonUser4, commonUser6]
   },
   {
     id: "tsk_09",
@@ -134,8 +142,9 @@ export const tasks: Task[] = [
     description: "バンドルサイズの削減および初期レンダリング速度の改善。",
     due_date: new Date("2026-11-05T12:00:00Z"),
     owner: commonUser5,
-    status: "BACKLOG",
+    status: "保留",
     is_published: true,
+    participants: [commonUser1, commonUser5]
   },
   {
     id: "tsk_10",
@@ -144,7 +153,8 @@ export const tasks: Task[] = [
     description: "法務チェック完了後のテキスト変更の適用。",
     due_date: new Date("2026-11-01T00:00:00Z"),
     owner: commonUser6,
-    status: "TODO",
+    status: "未着手",
     is_published: true,
+    participants: [commonUser6]
   },
 ]

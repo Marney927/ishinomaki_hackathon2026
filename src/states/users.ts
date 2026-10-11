@@ -7,7 +7,7 @@ export interface UsersState {
 
 export const useUsersState = create<UsersState>((get, set) => ({
   me: { // FIXME this is a placeholder data
-    id: "UNKNOWN",
+    id: "usr_01",
     name: "Load Ing",
     avatar_url: null
   } satisfies User,
