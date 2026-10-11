@@ -11,7 +11,7 @@ export interface TasksState {
 }
 
 export const useTasksState = create<TasksState>((set, get) => ({
-  tasks: [],
+  tasks: new Map(),
   insert_new_task: async (task_id: number, guild_id: number, title: string, description: string | null, due_date: string | null, status: string, is_published: boolean) => {},
   update_task: async (task_id: number, guild_id: number | undefined, title: string | undefined, description: string | undefined, due_date: string | null, status: string, is_published: boolean | undefined) => {},
   delete_task: async (task_id: number) => {}

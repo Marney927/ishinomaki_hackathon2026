@@ -13,15 +13,19 @@ type View =
 export function App() {
   const guildsState = useGuildsState();
   const usersState = useUsersState();
-  const [nowView, updateNowView] = useState<View>({type: "auth"});
+  const [nowView, updateNowView] = useState<View>({type: "selectGuilds"});
 
   return (
     <div>
       {nowView.type === "selectGuilds" && (
-        <GuildsTable guilds={guildsState.guilds} localUser={usersState.me} openGuild={(guild) => updateNowView({type: "guildView", guild_uuid: guild})} />
+        <div>
+          <GuildsTable guilds={guildsState.guilds} localUser={usersState.me} openGuild={(guild) => updateNowView({type: "guildView", guild_uuid: guild})} />
+        </div>
       )}
       {nowView.type === "auth" &&
-        <Login />
+        <div className="grid place-items-center w-full h-screen">
+          <Login />
+        </div>
       }
     </div>
   )

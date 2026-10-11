@@ -23,7 +23,7 @@ import { UserTip } from "@/components/user_tip.tsx"
 import type { Guild } from "@/states/guilds.ts"
 import type { User } from "@/states/users.ts"
 
-export function GuildsTable(props: {guilds: Guild[], localUser: User, openGuild: (guild_id: string) => void}) {
+export function GuildsTable(props: {guilds: Guild[], localUser: User | null, openGuild: (guild_id: string) => void}) {
   const [open, setOpen] = useState<boolean>(false);
   const [guildName, setGuildName] = useState<string>("");
 
@@ -77,13 +77,13 @@ export function GuildsTable(props: {guilds: Guild[], localUser: User, openGuild:
             <TableRow key={guild.id}>
               <TableCell>{guild.name}</TableCell>
               <TableCell>
-                {guild.owner.id === props.localUser.id ? "Owner" : "Member"}
+                {guild.owner.id === props.localUser?.id ? "Owner" : "Member"}
               </TableCell>
               <TableCell>
                 <UserTip user={guild.owner} />
               </TableCell>
               <TableCell>
-                <Button variant="outline">Open</Button>
+                <Button variant="outline" onClick={() => props.openGuild(guild.id)}>Open</Button>
               </TableCell>
             </TableRow>
           ))}
