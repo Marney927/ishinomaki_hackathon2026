@@ -1,9 +1,8 @@
 import "./index.css"
 import { useState } from "react"
 import { GuildsTable } from "@/guilds.tsx"
-import { useGuildsState } from "@/states/guilds.ts"
-import { useUsersState } from "@/states/users.ts"
 import { Login } from "@/login.tsx"
+import { Profile } from "@/profile.tsx"
 
 type View =
   {type: "home"} |
@@ -13,26 +12,21 @@ type View =
   {type: "guildConfig", guild_uuid: string};
 
 export function App() {
-  const guildsState = useGuildsState();
-  const usersState = useUsersState();
-  const [nowView, updateNowView] = useState<View>({type: "home"});
+  const [nowView, updateNowView] = useState<View>({type: "profile"});
 
   return (
     <div>
       {nowView.type === "home" && (
         <div>
-          <GuildsTable
-            guilds={guildsState.guilds}
-            localUser={usersState.me}
-            openGuild={(guild) => updateNowView({type: "guildView", guild_uuid: guild})}
-            createGuild={(name) => guildsState.addNewGuild(name)}
-            joinGuild={(id) => guildsState.joinGuildBySecretUuid(id)}
-          />
+          <GuildsTable openGuild={(guild) => updateNowView({type: "guildView", guild_uuid: guild})} />
         </div>
       )}
       {nowView.type === "auth" &&
         <Login />
       }
+      {nowView.type === "profile" && (
+        <Profile />
+      )}
     </div>
   )
 }

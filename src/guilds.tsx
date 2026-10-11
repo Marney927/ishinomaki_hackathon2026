@@ -11,8 +11,7 @@ import { Field, FieldGroup } from "@/components/ui/field.tsx"
 import { Input } from "@/components/ui/input.tsx"
 import { Label } from "@/components/ui/label.tsx"
 import { useState } from "react"
-import { type Guild } from "@/states/guilds.ts"
-import type { User } from "@/states/users.ts"
+import { type Guild, useGuildsState } from "@/states/guilds.ts"
 import {
   Item,
   ItemActions,
@@ -28,7 +27,8 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx"
 
-export function GuildsTable(props: {guilds: Guild[], localUser: User | null, openGuild: (guild_id: string) => void, createGuild: (name: string) => void, joinGuild: (invitation: string) => void}) {
+export function GuildsTable(props: {openGuild: (guild_id: Guild["id"]) => void}) {
+  const guildsState = useGuildsState()
   const [createGuildDialogOpen, setCreateGuildDialogOpen] = useState<boolean>(false);
   const [guildName, setGuildName] = useState<string>("");
   const [guildInvitation, setGuildInvitation] = useState<string>("");
@@ -98,8 +98,8 @@ export function GuildsTable(props: {guilds: Guild[], localUser: User | null, ope
             <Button
               type="submit"
               disabled={guildName.length === 0}
-              onClick={() => {
-                props.createGuild(guildName)
+              onClick={async () => {
+                await guildsState.addNewGuild(guildName)
                 setCreateGuildDialogOpen(false)
               }}
             >
@@ -127,8 +127,8 @@ export function GuildsTable(props: {guilds: Guild[], localUser: User | null, ope
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => {
-                props.joinGuild(guildInvitation)
+              onClick={async () => {
+                await guildsState.joinGuildBySecretUuid(guildInvitation)
                 setJoinGuildDialogOpen(false)
               }}
             >
@@ -151,7 +151,7 @@ export function GuildsTable(props: {guilds: Guild[], localUser: User | null, ope
         <h1 className="my-3 text-lg font-bold">参加中のギルド</h1>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-        {props.guilds.map((guild: Guild) => (
+        {guildsState.guilds.map((guild: Guild) => (
           <Card>
             <CardHeader>
               <CardTitle>{guild.name}</CardTitle>
