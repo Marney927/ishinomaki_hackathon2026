@@ -1,5 +1,5 @@
-import type { User } from "@/types/main.ts"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx"
+import type { User } from "@/states/users.ts"
 
 export function UserTip(props: {user: User}) {
   return (

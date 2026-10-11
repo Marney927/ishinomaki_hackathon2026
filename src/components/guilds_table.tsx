@@ -19,10 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table.tsx"
-import type { Guild, User } from "@/types/main.ts"
 import { UserTip } from "@/components/user_tip.tsx"
+import type { Guild } from "@/states/guilds.ts"
+import type { User } from "@/states/users.ts"
 
-export function GuildsTable(props: {guilds: Guild[], localUser: User, openGuild: (guild_id: number) => void}) {
+export function GuildsTable(props: {guilds: Guild[], localUser: User, openGuild: (guild_id: string) => void}) {
   const [open, setOpen] = useState<boolean>(false);
   const [guildName, setGuildName] = useState<string>("");
 
