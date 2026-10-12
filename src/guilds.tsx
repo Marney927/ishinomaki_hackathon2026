@@ -27,7 +27,7 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx"
 
-export function GuildsTable(props: {openGuild: (guild_id: Guild["id"]) => void}) {
+export function GuildsTable(props: {openGuild: (guild_id: Guild) => void}) {
   const guildsState = useGuildsState()
   const [createGuildDialogOpen, setCreateGuildDialogOpen] = useState<boolean>(false);
   const [guildName, setGuildName] = useState<string>("");
@@ -161,7 +161,7 @@ export function GuildsTable(props: {openGuild: (guild_id: Guild["id"]) => void})
               <div className="flex grow gap-3">
                 <Users /> {guild.member_count}人のメンバー
               </div>
-              <Button onClick={() => props.openGuild(guild.id)}>開く</Button>
+              <Button onClick={() => props.openGuild(guild)}>開く</Button>
             </CardFooter>
           </Card>
         ))}

@@ -4,22 +4,36 @@ import { GuildsTable } from "@/guilds.tsx"
 import { Login } from "@/login.tsx"
 import { Profile } from "@/profile.tsx"
 import { Tasks } from "@/tasks.tsx"
+import { GuildsSettings } from "@/guildsSettings.tsx"
+import type { Guild } from "@/states/guilds.ts"
+import { commonUser5 } from "@/mocks/tasks_mock.ts"
 
 type View =
   {type: "home"} |
   {type: "auth"} |
-  {type: "guildView", guild_uuid: string} |
+  {type: "guildView", guild: Guild} |
   {type: "profile"} |
-  {type: "guildConfig", guild_uuid: string};
+  {type: "guildConfig", guild: Guild};
+
+const mock_guild = {
+  id: "gld_0",
+    name: "Tech Team",
+    owner: commonUser5,
+    description: "A tech team for some devs.",
+    member_count: 15,
+}
 
 export function App() {
-  const [nowView, updateNowView] = useState<View>({type: "guildView", guild_uuid: ""});
+  const [nowView, updateNowView] = useState<View>({
+    type: "guildConfig",
+    guild: mock_guild,
+  });
 
   return (
-    <div>
+    <main>
       {nowView.type === "home" && (
         <div>
-          <GuildsTable openGuild={(guild) => updateNowView({type: "guildView", guild_uuid: guild})} />
+          <GuildsTable openGuild={(guild) => updateNowView({type: "guildConfig", guild: guild})} />
         </div>
       )}
       {nowView.type === "auth" &&
@@ -29,9 +43,12 @@ export function App() {
         <Profile />
       )}
       {nowView.type === "guildView" && (
-        <Tasks guildId={nowView.guild_uuid} />
+        <Tasks guild={nowView.guild} />
       )}
-    </div>
+      {nowView.type === "guildConfig" && (
+        <GuildsSettings guild={nowView.guild} />
+      )}
+    </main>
   )
 }
 

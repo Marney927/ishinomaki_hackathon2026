@@ -1,4 +1,4 @@
-import { type Guild, useGuildsState } from "@/states/guilds.ts"
+import { type Guild } from "@/states/guilds.ts"
 import { type User, useUsersState } from "@/states/users.ts"
 import { Calendar, Crown, PlusCircle, Settings, User2 } from "lucide-react"
 import { Button } from "@/components/ui/button.tsx"
@@ -8,14 +8,12 @@ import { type Status, type Task, useTasksState } from "@/states/tasks.ts"
 import { tasks } from "@/mocks/tasks_mock.ts"
 import {
   Card,
-  CardAction,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card.tsx"
-import { UserAvatar, UserTip } from "@/components/user_tip.tsx"
+import { UserTip } from "@/components/user_tip.tsx"
 import { Badge } from "@/components/ui/badge.tsx"
 import { useState } from "react"
 import {
@@ -37,8 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select.tsx"
 
-export function Tasks(props: {guildId: Guild["id"]}) {
-  const guildsState = useGuildsState();
+export function Tasks(props: {guild: Guild}) {
   const tasksState = useTasksState();
   const usersState = useUsersState();
   //const nowGuild = guildsState.guilds.find((guild) => guild.id === props.guildId);
@@ -108,7 +105,7 @@ export function Tasks(props: {guildId: Guild["id"]}) {
               <Field>
                 <Label htmlFor="state">ステータス</Label>
                 <Select items={states} value={state} onValueChange={(e) => setState(e ?? 'todo')}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-45">
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -135,7 +132,7 @@ export function Tasks(props: {guildId: Guild["id"]}) {
               type="submit"
               disabled={taskName.length === 0}
               onClick={async () => {
-                await tasksState.insert_new_task(props.guildId, taskName, description, dueDate, state, true)
+                await tasksState.insert_new_task(props.guild.id, taskName, description, dueDate, state, true)
                 setTaskDialogState(null)
               }}
             >

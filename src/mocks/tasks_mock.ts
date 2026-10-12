@@ -2,43 +2,43 @@ import type { User } from "@/states/users.ts"
 import type { Guild } from "@/states/guilds.ts"
 import { type Task } from "@/states/tasks.ts"
 
-const commonUser1: User = {
+export const commonUser1: User = {
   id: "usr_01",
   name: "Alice",
   avatar_url: "https://example.com/avatars/alice.png",
 }
 
-const commonUser2: User = {
+export const commonUser2: User = {
   id: "usr_02",
   name: "Bob",
   avatar_url: "https://example.com/avatars/bob.png",
 }
 
-const commonUser3: User = {
+export const commonUser3: User = {
   id: "usr_03",
   name: "Charlie",
   avatar_url: null,
 }
 
-const commonUser4: User = {
+export const commonUser4: User = {
   id: "usr_04",
   name: "David",
   avatar_url: "https://example.com/avatars/david.png",
 }
 
-const commonUser5: User = {
+export const commonUser5: User = {
   id: "usr_05",
   name: "Eve",
   avatar_url: null,
 }
 
-const commonUser6: User = {
+export const commonUser6: User = {
   id: "usr_06",
   name: "Frank",
   avatar_url: "https://example.com/avatars/frank.png",
 }
 
-const commonGuild: Guild = {
+export const commonGuild: Guild = {
   id: "gld_01",
   name: "Dev Team Guild",
   owner: commonUser1,
