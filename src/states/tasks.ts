@@ -41,8 +41,26 @@ export interface TasksState {
   ) => Promise<void>
   update_task: (task_id: string, changes: TaskChanges) => Promise<void>
   delete_task: (task_id: string) => Promise<void>
+  setParticipation: (task: Task, joined: boolean) => Promise<void>
 }
 export const useTasksState = create<TasksState>((set, get) => ({
+  setParticipation: async (task, joined) => {
+    const userId = useAuthState.getState().session?.user.id
+    if (!userId) throw new Error("ログインしてください")
+    const db = createClient()
+    const result = joined
+      ? await db
+          .from("task_participants")
+          .insert({ task_id: task.id, user_id: userId })
+      : await db
+          .from("task_participants")
+          .delete()
+          .eq("task_id", task.id)
+          .eq("user_id", userId)
+    if (result.error && !(joined && result.error.code === "23505"))
+      throw result.error
+    await get().loadTasks(task.guild.id)
+  },
   tasks: new Map(),
   members: new Map(),
   loadTasks: async (guild_id) => {

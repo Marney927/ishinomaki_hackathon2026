@@ -16,6 +16,7 @@ export interface GuildsState {
   getGuildInviteCode: (id: number) => Promise<string>
   editGuildInviteCode: (id: number) => Promise<string>
   deleteGuildMember: (id: number, uuid: string) => Promise<void>
+  editGuildMaster: (id: number, uuid: string) => Promise<void>
   deleteGuild: (id: number) => Promise<void>
   addNewGuild: (name: string) => Promise<void>
   joinGuildBySecretUuid: (uuid: string) => Promise<void>
@@ -24,6 +25,22 @@ export interface GuildsState {
 }
 export const useGuildsState = create<GuildsState>((set, get) => ({
   guilds: [],
+  editGuildMaster: async (id, uuid) => {
+    requireGuildId(id)
+    requireUuid(uuid, "メンバーID")
+    const { error } = await createClient().rpc("transfer_guild_owner", {
+      p_guild_id: id,
+      p_user_id: uuid,
+    })
+    if (error) {
+      if (error.code === "PGRST202")
+        throw new Error(
+          "ギルドマスターの変更を利用できません。管理者にお問い合わせください。"
+        )
+      throw error
+    }
+    await get().loadGuilds()
+  },
   getGuildInviteCode: async (id) => {
     requireGuildId(id)
     const { data, error } = await createClient().rpc("get_guild_invite_code", {

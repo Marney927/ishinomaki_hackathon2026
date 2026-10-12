@@ -6,9 +6,28 @@ export interface UsersState {
   me: User | null
   loadMe: (id: string, defaultName: string) => Promise<void>
   update_name: (id: string, name: string) => Promise<void>
+  update_avatar: (id: string, avatar_url: string) => Promise<void>
 }
 export const useUsersState = create<UsersState>((set) => ({
   me: null,
+  update_avatar: async (id, avatar_url) => {
+    if (
+      !/^data:image\/(png|jpeg|webp);base64,/.test(avatar_url) ||
+      avatar_url.length > 200000
+    )
+      throw new Error("画像サイズが大きすぎます")
+    const { data, error } = await createClient()
+      .from("profiles")
+      .update({ avatar_url })
+      .eq("id", id)
+      .select("id, display_name, avatar_url")
+      .single()
+    if (error) throw error
+    if (useAuthState.getState().session?.user.id !== id) return
+    set({
+      me: { id: data.id, name: data.display_name, avatar_url: data.avatar_url },
+    })
+  },
   loadMe: async (id, defaultName) => {
     const db = createClient()
     const { data, error } = await db

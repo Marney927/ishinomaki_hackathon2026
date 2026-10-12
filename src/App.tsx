@@ -9,7 +9,7 @@ import { useGuildsState, type Guild } from "@/states/guilds"
 import { useAuthState } from "@/states/auth"
 import { useUsersState } from "@/states/users"
 import { useTasksState } from "@/states/tasks"
-import { NavMenu } from "@/components/navMenu"
+import { NavMenu, PageBreadcrumb } from "@/components/navMenu"
 import { reportError } from "@/lib/errors"
 import { Button } from "@/components/ui/button"
 export type View =
@@ -20,7 +20,13 @@ export type View =
   | { type: "guildConfig"; guild: Guild }
 export function App() {
   const session = useAuthState((s) => s.session)
+  const recovering = useAuthState((s) => s.recovering)
   const [nowView, setView] = useState<View>({ type: "home" })
+  const [lastGuildId, setLastGuildId] = useState<number | null>(null)
+  const navigate = (view: View) => {
+    if ("guild" in view) setLastGuildId(view.guild.id)
+    setView(view)
+  }
   const [initialized, setInitialized] = useState(false)
   const [readyUser, setReadyUser] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
@@ -51,6 +57,7 @@ export function App() {
   const email = session?.user.email
   useEffect(() => {
     let active = true
+    setLastGuildId(null)
     setReadyUser(null)
     setFailed(false)
     setView({ type: "home" })
@@ -78,6 +85,12 @@ export function App() {
   }, [userId, email, retry])
   if (!initialized) return <p className="p-6">認証を確認しています。</p>
   if (!session) return <Login />
+  if (recovering)
+    return (
+      <div className="login-page">
+        <Profile recovery />
+      </div>
+    )
   if (readyUser !== userId)
     return (
       <div className="p-6">
@@ -105,15 +118,22 @@ export function App() {
       ? guilds.find((g) => g.id === nowView.guild.id)
       : undefined
   return (
-    <div>
+    <div className="app-shell">
       <NavMenu
         state={guild && "guild" in nowView ? { ...nowView, guild } : nowView}
-        setView={setView}
+        setView={navigate}
+        activeGuild={
+          nowView.type === "profile"
+            ? guilds.find((g) => g.id === lastGuildId)
+            : undefined
+        }
       />
-      <main>
+      <main className="app-workspace">
+        <PageBreadcrumb state={nowView} setView={navigate} />
         {nowView.type === "home" && (
           <GuildsTable
-            openGuild={(guild) => setView({ type: "guildView", guild })}
+            openGuild={(guild) => navigate({ type: "guildView", guild })}
+            openSettings={(guild) => navigate({ type: "guildConfig", guild })}
           />
         )}
         {nowView.type === "auth" && <Login />}
@@ -122,7 +142,7 @@ export function App() {
           <Tasks
             key={guild.id}
             guild={guild}
-            openSettings={() => setView({ type: "guildConfig", guild })}
+            openSettings={() => navigate({ type: "guildConfig", guild })}
           />
         )}
         {nowView.type === "guildConfig" && guild && (
