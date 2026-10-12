@@ -1,3 +1,5 @@
+﻿import { reportError } from "@/lib/errors"
+import { toast } from "@/components/ui/toast"
 import {
   Field,
   FieldDescription,
@@ -14,8 +16,9 @@ import { Camera } from "lucide-react"
 import { useState } from "react"
 
 export function Profile() {
-  const usersState = useUsersState();
-  const [newUsername, setNewUsername] = useState<string>("");
+  const usersState = useUsersState()
+  const [busy, setBusy] = useState(false)
+  const [newUsername, setNewUsername] = useState<string>("")
 
   return (
     <div className="m-6">
@@ -30,7 +33,12 @@ export function Profile() {
               <Field className="grid-item">
                 <div className="grid w-full place-items-center">
                   <UserAvatar className="h-30 w-30" user={usersState.me} />
-                  <Button variant="outline" className="mt-3">
+                  <Button
+                    variant="outline"
+                    className="mt-3"
+                    disabled
+                    title="画像変更は未実装です"
+                  >
                     <Camera />
                     画像を変更
                   </Button>
@@ -48,11 +56,28 @@ export function Profile() {
                       onChange={(e) => setNewUsername(e.target.value)}
                     />
                     <Button
-                      disabled={newUsername.length === 0}
-                      className="px-10"
-                      onClick={() =>
-                        usersState.me && usersState.update_name(usersState.me.id, newUsername)
+                      disabled={
+                        busy ||
+                        newUsername.trim().length === 0 ||
+                        newUsername.trim().length > 100
                       }
+                      className="px-10"
+                      onClick={async () => {
+                        if (!usersState.me || busy) return
+                        setBusy(true)
+                        try {
+                          await usersState.update_name(
+                            usersState.me.id,
+                            newUsername
+                          )
+                          setNewUsername("")
+                          toast.add({ title: "表示名を保存しました" })
+                        } catch (e) {
+                          reportError(e)
+                        } finally {
+                          setBusy(false)
+                        }
+                      }}
                     >
                       変更
                     </Button>

@@ -1,3 +1,4 @@
+﻿import { getErrorMessage, reportError } from "@/lib/errors"
 import {
   Dialog,
   DialogContent,
@@ -6,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog.tsx"
 import { Button } from "@/components/ui/button.tsx"
-import {PlusCircle, UserGroup, Users } from "lucide-react"
+import { PlusCircle, UserGroup, Users } from "lucide-react"
 import { Field, FieldGroup } from "@/components/ui/field.tsx"
 import { Input } from "@/components/ui/input.tsx"
 import { Label } from "@/components/ui/label.tsx"
@@ -27,12 +28,15 @@ import {
   CardTitle,
 } from "@/components/ui/card.tsx"
 
-export function GuildsTable(props: {openGuild: (guild_id: Guild) => void}) {
+export function GuildsTable(props: { openGuild: (guild_id: Guild) => void }) {
   const guildsState = useGuildsState()
-  const [createGuildDialogOpen, setCreateGuildDialogOpen] = useState<boolean>(false);
-  const [guildName, setGuildName] = useState<string>("");
-  const [guildInvitation, setGuildInvitation] = useState<string>("");
-  const [joinGuildDialogOpen, setJoinGuildDialogOpen] = useState<boolean>(false);
+  const [busy, setBusy] = useState(false)
+  const [createError, setCreateError] = useState("")
+  const [createGuildDialogOpen, setCreateGuildDialogOpen] =
+    useState<boolean>(false)
+  const [guildName, setGuildName] = useState<string>("")
+  const [guildInvitation, setGuildInvitation] = useState<string>("")
+  const [joinGuildDialogOpen, setJoinGuildDialogOpen] = useState<boolean>(false)
 
   return (
     <div className="m-6">
@@ -72,10 +76,23 @@ export function GuildsTable(props: {openGuild: (guild_id: Guild) => void}) {
           </Item>
         </div>
       </div>
-      <Dialog open={createGuildDialogOpen}>
+      <Dialog
+        open={createGuildDialogOpen}
+        onOpenChange={(open) => {
+          if (!busy) setCreateGuildDialogOpen(open)
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="font-bold">ギルドを作成</DialogTitle>
+            {createError && (
+              <p
+                role="alert"
+                className="text-sm whitespace-pre-wrap text-destructive"
+              >
+                {createError}
+              </p>
+            )}
             <FieldGroup>
               <Field>
                 <Label htmlFor="guild-name">ギルド名</Label>
@@ -91,16 +108,30 @@ export function GuildsTable(props: {openGuild: (guild_id: Guild) => void}) {
           <DialogFooter>
             <Button
               variant="outline"
+              disabled={busy}
               onClick={() => setCreateGuildDialogOpen(false)}
             >
               キャンセル
             </Button>
             <Button
               type="submit"
-              disabled={guildName.length === 0}
+              disabled={
+                busy || !guildName.trim() || guildName.trim().length > 120
+              }
               onClick={async () => {
-                await guildsState.addNewGuild(guildName)
-                setCreateGuildDialogOpen(false)
+                if (busy) return
+                setBusy(true)
+                try {
+                  setCreateError("")
+                  await guildsState.addNewGuild(guildName)
+                  setCreateGuildDialogOpen(false)
+                  setGuildName("")
+                } catch (e) {
+                  setCreateError(getErrorMessage(e))
+                  reportError(e)
+                } finally {
+                  setBusy(false)
+                }
               }}
             >
               作成
@@ -108,7 +139,12 @@ export function GuildsTable(props: {openGuild: (guild_id: Guild) => void}) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Dialog open={joinGuildDialogOpen}>
+      <Dialog
+        open={joinGuildDialogOpen}
+        onOpenChange={(open) => {
+          if (!busy) setJoinGuildDialogOpen(open)
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="font-bold">ギルドに参加</DialogTitle>
@@ -127,18 +163,26 @@ export function GuildsTable(props: {openGuild: (guild_id: Guild) => void}) {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={async () => {
-                await guildsState.joinGuildBySecretUuid(guildInvitation)
-                setJoinGuildDialogOpen(false)
-              }}
+              disabled={busy}
+              onClick={() => setJoinGuildDialogOpen(false)}
             >
               キャンセル
             </Button>
             <Button
               type="submit"
-              disabled={guildName.length === 0}
-              onClick={() => {
-                setJoinGuildDialogOpen(false)
+              disabled={busy || !guildInvitation.trim()}
+              onClick={async () => {
+                if (busy) return
+                setBusy(true)
+                try {
+                  await guildsState.joinGuildBySecretUuid(guildInvitation)
+                  setJoinGuildDialogOpen(false)
+                  setGuildInvitation("")
+                } catch (e) {
+                  reportError(e)
+                } finally {
+                  setBusy(false)
+                }
               }}
             >
               参加
@@ -151,8 +195,13 @@ export function GuildsTable(props: {openGuild: (guild_id: Guild) => void}) {
         <h1 className="my-3 text-lg font-bold">参加中のギルド</h1>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+        {guildsState.guilds.length === 0 && (
+          <p className="p-3 text-muted-foreground">
+            参加中のギルドはありません。
+          </p>
+        )}
         {guildsState.guilds.map((guild: Guild) => (
-          <Card>
+          <Card key={guild.id}>
             <CardHeader>
               <CardTitle>{guild.name}</CardTitle>
               <CardDescription>{guild.description}</CardDescription>

@@ -1,360 +1,8 @@
+﻿import { requireUuid, requireGuildId } from "@/lib/validation"
+import { useAuthState } from "@/states/auth"
 import { create } from "zustand/react"
-import { createClient } from "@/lib/supabase/client";
-import type { User } from "@/states/users.ts"
-
-export interface GuildsState {
-
-  guilds: Guild[]
-  addNewGuild: (name: string) => Promise<void>
-  editGuildName: (id: number, name: string) => Promise<void>
-  editGuildDescription: (id: number, description: string) => Promise<void>
-  editGuildInviteCode: (id: number) => Promise<void>
-  editGuildMaster: (id: number, uuid: string) => Promise<void>
-  joinGuildBySecretUuid: (uuid: string) => Promise<void>
-  deleteGuildMember: (id: number, uuid: string) => Promise<void>
-  deleteGuild: (id: number) => Promise<void>
-  getGuildInviteCode: (id: number) => Promise<string>;
-}
-
-export const useGuildsState = create<GuildsState>((set, get) => ({
-  guilds: [],
-  addNewGuild: async (name: string) => {
-    const supabase = createClient();
-    const { data: guildId,error } = await supabase.rpc(
-      "create_guild",
-      {
-        p_name: name
-      }
-    );
-
-    if (error !== null) {
-      // 作成エラー
-      throw error;
-    }
-
-    // 新規作成したデータを取得  
-    const { data: guildData, error: guildError } = await supabase
-    .from("guilds")
-      .select(`
-        id,
-        name,
-        description,
-        owner_id,
-        profiles!guilds_owner_id_fkey (
-          id,
-          display_name,
-          avatar_url
-        )
-      `)
-    .eq("id", guildId)
-    .single();
-
-    if (guildError !== null) {
-      // 取得エラー
-      throw guildError;
-    }
-
-    if (guildData === null){
-      throw new Error("ギルド情報を取得できませんでした");;
-    }
-
-    const displayDescription = guildData.description ?? "";
-    const profile = guildData.profiles[0];
-    const owner: User = {
-      id: profile.id,
-      name: profile.display_name ?? "",
-      avatar_url: profile.avatar_url,
-    };
-
-    const { count, error: countError } = await supabase
-      .from("guild_members")
-      .select("*", { count: "exact", head: true })
-      .eq("guild_id", guildId);
-
-    if (countError !== null) {
-      throw countError;
-    }
-
-    const memberCount = count ?? 0;
-    
-    const newGuild: Guild = {
-      id: guildData.id,
-      name: guildData.name,
-      owner,
-      description: displayDescription,
-      member_count: memberCount,
-    };
-    // 正常にデータ取得できたら配列に追加する
-    set((state) => ({
-      guilds: [...state.guilds, newGuild]
-    }));
-  },
-
-  editGuildName: async (id: number, name: string) => {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("guilds")
-      .update({ name })
-      .eq("id", id)
-      .select("id")
-      .single();
-    if (error !== null) {
-      // 更新エラー
-      throw error;
-    }
-
-    // 正常に更新できたら配列も更新する
-    set((state) => ({
-      guilds: state.guilds.map((guild) =>
-        guild.id === id
-          ? { ...guild, name: name }
-          : guild
-      )
-    }));
-  },
-
-  editGuildDescription: async (id: number, description: string) => {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("guilds")
-      .update({ description })
-      .eq("id", id)
-      .select("id")
-      .single();
-    if (error !== null) {
-      // 更新エラー
-      throw error;
-    }
-
-    // 正常に更新できたら配列も更新する
-    set((state) => ({
-      guilds: state.guilds.map((guild) =>
-        guild.id === id
-          ? { ...guild, description: description }
-          : guild
-      )
-    }));
-  },
-
-  editGuildInviteCode: async (id: number) => {
-    const supabase = createClient();
-    const { error } = await supabase.rpc(
-      "rotate_guild_invite_code",
-      {
-        p_guild_id: id
-      }
-    );
-    if (error !== null) {
-      // 更新エラー
-      throw error;
-    }
-  },
-
-  editGuildMaster: async (id: number, uuid: string) => {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("guilds")
-      .update({ owner_id: uuid })
-      .eq("id", id)
-      .select("id")
-      .single();
-    if (error !== null) {
-      // 更新エラー
-      throw error;
-    }
-
-    // 新ギルドマスターのprofileデータを取得  
-    const { data: userData, error: userError } = await supabase
-      .from("profiles")
-      .select(`
-        id,
-        display_name,
-        avatar_url
-      `)
-      .eq("id", uuid)
-      .single();
-
-    if (userError !== null) {
-      // 取得エラー
-      throw userError;
-    }
-    if (userData === null) {
-      throw new Error("新しいギルドマスターの情報を取得できませんでした");
-    }
-
-    const newOwner: User = {
-      id: userData.id,
-      name: userData.display_name ?? "",
-      avatar_url: userData.avatar_url,
-    };
-
-    // 正常に更新できたら配列も更新する
-    set((state) => ({
-      guilds: state.guilds.map((guild) =>
-        guild.id === id
-          ? { ...guild, owner: newOwner }
-          : guild
-      )
-    }));
-  },
-
-  joinGuildBySecretUuid: async (uuid: string) => {
-    const supabase = createClient();
-
-    // RPCを実行
-    const { data: guildId, error: joinError } = await supabase.rpc(
-      "join_guild",
-      {
-        p_secret: uuid,
-      }
-    );
-    if (joinError !== null) {
-      // エラー
-      throw joinError;
-    }
-    if (guildId === null) {
-      throw new Error("参加先のギルドIDを取得できませんでした");
-    }
-
-    // 新規加入しギルドのデータを取得  
-    const { data: guildData, error: guildError } = await supabase
-      .from("guilds")
-      .select(`
-        id,
-        name,
-        description,
-        owner_id,
-        profiles!guilds_owner_id_fkey (
-          id,
-          display_name,
-          avatar_url
-        )
-      `)
-      .eq("id", guildId)
-      .single();
-
-    if (guildError !== null) {
-      // 取得エラー
-      throw guildError;
-    }
-
-    if (guildData === null) {
-      throw new Error("ギルド情報を取得できませんでした");;
-    }
-
-    // guilds配列に現在参照しているギルド情報があるかを確認する
-    const result = get().guilds.some((guild) => guild.id === guildData.id);
-    if (!result){
-      // ギルド情報が配列に存在しない場合のみ追加処理を実施
-      const displayDescription = guildData.description ?? "";
-      const profile = guildData.profiles[0];
-      if (profile === undefined) {
-        throw new Error("オーナー情報を取得できませんでした");
-      }
-      const owner: User = {
-        id: profile.id,
-        name: profile.display_name ?? "",
-        avatar_url: profile.avatar_url,
-      };
-
-      const { count, error: countError } = await supabase
-        .from("guild_members")
-        .select("*", { count: "exact", head: true })
-        .eq("guild_id", guildId);
-
-      if (countError !== null) {
-        throw countError;
-      }
-
-      const memberCount = count ?? 0;
-
-      const newGuild: Guild = {
-        id: guildData.id,
-        name: guildData.name,
-        owner,
-        description: displayDescription,
-        member_count: memberCount,
-      };
-      // 正常にデータ取得できたら配列に追加する
-      set((state) => ({
-        guilds: state.guilds.some(
-          (guild) => guild.id === newGuild.id
-        )
-          ? state.guilds
-          : [...state.guilds, newGuild]
-      }));
-    }
-  },
-
-  deleteGuildMember: async (id: number, uuid: string) => {
-    const supabase = createClient();
-    const { error } = await supabase.rpc(
-      "remove_guild_member",
-      {
-        p_guild_id: id,
-        p_user_id: uuid,
-      }
-    );
-    if (error !== null) {
-      // 更新エラー
-      throw error;
-    }
-    // 正常に更新できたら配列も更新する
-    set((state) => ({
-      guilds: state.guilds.map((guild) =>
-        guild.id === id
-          ? { ...guild, member_count: guild.member_count - 1 }
-          : guild
-      )
-    }));
-  },
-
-  deleteGuild: async (id: number) => {
-    const supabase = createClient();
-    const { error } = await supabase.rpc(
-      "delete_guild",
-      {
-        p_guild_id: id,
-      }
-    );
-    if (error !== null) {
-      // 更新エラー
-      throw error;
-    }
-    // 正常に更新できたら配列から削除する
-    set((state) => ({
-      guilds: state.guilds.filter((guild) =>
-        guild.id !== id
-      )
-    }));
-  },
-  
-  getGuildInviteCode: async  (id: number) => {
-    const supabase = createClient();
-    const { data: guildSecret, error: guildError } = await supabase
-      .from("guilds")
-      .select(`
-        secret_uuid_v4
-      `)
-      .eq("id", id)
-      .single();
-    if (guildError !== null) {
-      // 取得エラー
-      throw guildError;
-    }
-
-    if (guildSecret === null) {
-      throw new Error("招待コードを取得できませんでした");
-    }
-
-    if (guildSecret.secret_uuid_v4 === null) {
-      throw new Error("招待コードが設定されていません");
-    }
-
-    return guildSecret.secret_uuid_v4;
-  },
-}))
-
+import { createClient } from "@/lib/supabase/client"
+import { useUsersState, type User } from "@/states/users"
 export type Guild = {
   id: number
   name: string
@@ -362,3 +10,153 @@ export type Guild = {
   description: string
   member_count: number
 }
+export interface GuildsState {
+  guilds: Guild[]
+  loadGuilds: () => Promise<void>
+  getGuildInviteCode: (id: number) => Promise<string>
+  editGuildInviteCode: (id: number) => Promise<string>
+  deleteGuildMember: (id: number, uuid: string) => Promise<void>
+  deleteGuild: (id: number) => Promise<void>
+  addNewGuild: (name: string) => Promise<void>
+  joinGuildBySecretUuid: (uuid: string) => Promise<void>
+  editGuildName: (id: number, name: string) => Promise<void>
+  editGuildDescription: (id: number, description: string) => Promise<void>
+}
+export const useGuildsState = create<GuildsState>((set, get) => ({
+  guilds: [],
+  getGuildInviteCode: async (id) => {
+    requireGuildId(id)
+    const { data, error } = await createClient().rpc("get_guild_invite_code", {
+      p_guild_id: id,
+    })
+    if (error) {
+      if (error.code === "PGRST202")
+        throw new Error(
+          "招待コード取得を利用できません。管理者にお問い合わせください。"
+        )
+      throw error
+    }
+    if (typeof data !== "string" || !data)
+      throw new Error("招待コードを取得できませんでした")
+    return requireUuid(data, "招待コード")
+  },
+  editGuildInviteCode: async (id) => {
+    requireGuildId(id)
+    const { data, error } = await createClient().rpc(
+      "rotate_guild_invite_code",
+      { p_guild_id: id }
+    )
+    if (error) throw error
+    if (typeof data !== "string" || !data)
+      throw new Error("新しい招待コードを取得できませんでした")
+    return data
+  },
+  deleteGuildMember: async (id, uuid) => {
+    requireGuildId(id)
+    requireUuid(uuid, "メンバーID")
+    const { error } = await createClient().rpc("remove_guild_member", {
+      p_guild_id: id,
+      p_user_id: uuid,
+    })
+    if (error) throw error
+    await get().loadGuilds()
+  },
+  deleteGuild: async (id) => {
+    requireGuildId(id)
+    const userId = useAuthState.getState().session?.user.id
+    const { error } = await createClient().rpc("delete_guild", {
+      p_guild_id: id,
+    })
+    if (error) throw error
+    if (useAuthState.getState().session?.user.id !== userId) return
+    set((state) => ({ guilds: state.guilds.filter((g) => g.id !== id) }))
+  },
+  loadGuilds: async () => {
+    const userId = useAuthState.getState().session?.user.id
+    const db = createClient()
+    const { data, error } = await db
+      .from("guilds")
+      .select("id, name, description, owner_id")
+      .order("id")
+    if (error) throw error
+    if (useAuthState.getState().session?.user.id !== userId) return
+    if (!data.length) {
+      set({ guilds: [] })
+      return
+    }
+    const ids = data.map((g) => g.id)
+    const [profiles, members] = await Promise.all([
+      db
+        .from("profiles")
+        .select("id, display_name, avatar_url")
+        .in("id", [...new Set(data.map((g) => g.owner_id))]),
+      db.from("guild_members").select("guild_id, user_id").in("guild_id", ids),
+    ])
+    if (profiles.error) throw profiles.error
+    if (members.error) throw members.error
+    if (useAuthState.getState().session?.user.id !== userId) return
+    set({
+      guilds: data.map((g) => {
+        const p = profiles.data.find((p) => p.id === g.owner_id)
+        if (!p)
+          throw new Error("ギルド所有者のプロフィールを取得できませんでした")
+        return {
+          id: g.id,
+          name: g.name,
+          description: g.description ?? "",
+          owner: { id: p.id, name: p.display_name, avatar_url: p.avatar_url },
+          member_count: members.data.filter((m) => m.guild_id === g.id).length,
+        }
+      }),
+    })
+  },
+  addNewGuild: async (name) => {
+    if (!name.trim() || name.trim().length > 120)
+      throw new Error("ギルド名は1〜120文字で入力してください")
+    const db = createClient()
+    const { data: auth, error: authError } = await db.auth.getUser()
+    if (authError) throw authError
+    if (!auth.user) throw new Error("ログインしてください")
+    await useUsersState
+      .getState()
+      .loadMe(auth.user.id, auth.user.email?.split("@")[0] ?? "Member")
+    const { error } = await db.rpc("create_guild", {
+      p_name: name.trim(),
+      p_description: null,
+    })
+    if (error) throw error
+    await get().loadGuilds()
+  },
+  joinGuildBySecretUuid: async (uuid) => {
+    requireUuid(uuid.trim(), "招待コード")
+    const { error } = await createClient().rpc("join_guild", {
+      p_secret: uuid.trim(),
+    })
+    if (error) throw error
+    await get().loadGuilds()
+  },
+  editGuildName: async (id, name) => {
+    requireGuildId(id)
+    if (!name.trim() || name.trim().length > 120)
+      throw new Error("ギルド名は1〜120文字で入力してください")
+    const { error } = await createClient()
+      .from("guilds")
+      .update({ name: name.trim() })
+      .eq("id", id)
+      .select("id")
+      .single()
+    if (error) throw error
+    await get().loadGuilds()
+  },
+  editGuildDescription: async (id, description) => {
+    requireGuildId(id)
+    const { error } = await createClient()
+      .from("guilds")
+      .update({ description })
+      .eq("id", id)
+      .select("id")
+      .single()
+    if (error) throw error
+    await get().loadGuilds()
+  },
+}))

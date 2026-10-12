@@ -1,3 +1,5 @@
+﻿import { useAuthState } from "@/states/auth"
+import { reportError } from "@/lib/errors"
 import type { View } from "@/App.tsx"
 import {
   Breadcrumb,
@@ -10,29 +12,32 @@ import { UserTip } from "@/components/user_tip.tsx"
 import { useUsersState } from "@/states/users.ts"
 import { Button } from "@/components/ui/button.tsx"
 
-export function NavMenu(props: {state: View, setView: (view: View) => void}) {
-  const usersState = useUsersState();
-  const nowStack: [string, View | null][] = [];
+export function NavMenu(props: { state: View; setView: (view: View) => void }) {
+  const usersState = useUsersState()
+  const nowStack: [string, View | null][] = []
   switch (props.state.type) {
     case "home":
-      nowStack.push(["Home", null]);
-      break;
+      nowStack.push(["Home", null])
+      break
     case "auth":
-      nowStack.push(["Auth", null]);
-      break;
+      nowStack.push(["Auth", null])
+      break
     case "profile":
-      nowStack.push(["Home", {type: "home"}]);
-      nowStack.push(["Profile", null]);
-      break;
+      nowStack.push(["Home", { type: "home" }])
+      nowStack.push(["Profile", null])
+      break
     case "guildView":
       nowStack.push(["Home", { type: "home" }])
-      nowStack.push([props.state.guild.name, null]);
-      break;
+      nowStack.push([props.state.guild.name, null])
+      break
     case "guildConfig":
       nowStack.push(["Home", { type: "home" }])
-      nowStack.push([props.state.guild.name, {type: "guildView", guild: props.state.guild}]);
-      nowStack.push(["Config", null]);
-      break;
+      nowStack.push([
+        props.state.guild.name,
+        { type: "guildView", guild: props.state.guild },
+      ])
+      nowStack.push(["Config", null])
+      break
   }
 
   return (
@@ -41,7 +46,7 @@ export function NavMenu(props: {state: View, setView: (view: View) => void}) {
         <Breadcrumb className="shrink">
           <BreadcrumbList>
             {nowStack
-              .map(([name, link_to], idx, ref) => (
+              .map(([name, link_to]) => (
                 <BreadcrumbItem key={name}>
                   <BreadcrumbLink
                     href="#"
@@ -52,17 +57,32 @@ export function NavMenu(props: {state: View, setView: (view: View) => void}) {
                 </BreadcrumbItem>
               ))
               .flatMap((item, idx, ar) =>
-                idx + 1 < ar.length ? [item, <BreadcrumbSeparator />] : [item]
+                idx + 1 < ar.length
+                  ? [item, <BreadcrumbSeparator key={`separator-${idx}`} />]
+                  : [item]
               )}
           </BreadcrumbList>
         </Breadcrumb>
-        {usersState.me ? (<UserTip
-          user={usersState.me}
-          className="ml-auto cursor-pointer bg-accent p-2 rounded-2xl"
-          onclick={() => props.setView({ type: "profile" })}
-        />) : (
-          <Button onClick={() => props.setView({type: "auth"})}>Login / Signup</Button>
-          )}
+        <Button
+          variant="outline"
+          className="mr-2 ml-auto"
+          onClick={() =>
+            void useAuthState.getState().logout().catch(reportError)
+          }
+        >
+          ログアウト
+        </Button>
+        {usersState.me ? (
+          <UserTip
+            user={usersState.me}
+            className="ml-auto cursor-pointer rounded-2xl bg-accent p-2"
+            onclick={() => props.setView({ type: "profile" })}
+          />
+        ) : (
+          <Button onClick={() => props.setView({ type: "auth" })}>
+            Login / Signup
+          </Button>
+        )}
       </div>
     </nav>
   )

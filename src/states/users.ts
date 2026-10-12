@@ -1,21 +1,66 @@
+﻿import { useAuthState } from "@/states/auth"
 import { create } from "zustand/react"
-
+import { createClient } from "@/lib/supabase/client"
+export type User = { id: string; name: string; avatar_url: string | null }
 export interface UsersState {
-  me: User | null,
-  update_name: (id: string, name: string) => Promise<void>,
+  me: User | null
+  loadMe: (id: string, defaultName: string) => Promise<void>
+  update_name: (id: string, name: string) => Promise<void>
 }
-
-export const useUsersState = create<UsersState>((get, set) => ({
-  me: { // FIXME this is a placeholder data
-    id: "usr_01",
-    name: "Load Ing",
-    avatar_url: null
-  } satisfies User,
-  update_name: async (id: string, new_name: string) => {}
+export const useUsersState = create<UsersState>((set) => ({
+  me: null,
+  loadMe: async (id, defaultName) => {
+    const db = createClient()
+    const { data, error } = await db
+      .from("profiles")
+      .select("id, display_name, avatar_url")
+      .eq("id", id)
+      .maybeSingle()
+    if (error) throw error
+    let profile = data
+    if (!profile) {
+      const result = await db
+        .from("profiles")
+        .insert({
+          id,
+          display_name: defaultName.trim().slice(0, 100) || "Member",
+        })
+        .select("id, display_name, avatar_url")
+        .single()
+      if (result.error) {
+        // Another tab may have created this profile concurrently.
+        const retry = await db
+          .from("profiles")
+          .select("id, display_name, avatar_url")
+          .eq("id", id)
+          .single()
+        if (retry.error) throw result.error
+        profile = retry.data
+      } else profile = result.data
+    }
+    if (useAuthState.getState().session?.user.id !== id) return
+    set({
+      me: {
+        id: profile.id,
+        name: profile.display_name,
+        avatar_url: profile.avatar_url,
+      },
+    })
+  },
+  update_name: async (id, name) => {
+    const display_name = name.trim()
+    if (!display_name || display_name.length > 100)
+      throw new Error("表示名は1〜100文字で入力してください")
+    const { data, error } = await createClient()
+      .from("profiles")
+      .update({ display_name })
+      .eq("id", id)
+      .select("id, display_name, avatar_url")
+      .single()
+    if (error) throw error
+    if (useAuthState.getState().session?.user.id !== id) return
+    set({
+      me: { id: data.id, name: data.display_name, avatar_url: data.avatar_url },
+    })
+  },
 }))
-
-export type User = {
-  id: string
-  name: string
-  avatar_url: string | null
-}
