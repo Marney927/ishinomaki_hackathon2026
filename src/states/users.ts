@@ -1,11 +1,17 @@
 import { create } from "zustand/react"
 
 export interface UsersState {
-  me: User | null
+  me: User | null,
+  update_name: (id: string, name: string) => Promise<void>,
 }
 
 export const useUsersState = create<UsersState>((get, set) => ({
-  me: null
+  me: { // FIXME this is a placeholder data
+    id: "usr_01",
+    name: "Load Ing",
+    avatar_url: null
+  } satisfies User,
+  update_name: async (id: string, new_name: string) => {}
 }))
 
 export type User = {
