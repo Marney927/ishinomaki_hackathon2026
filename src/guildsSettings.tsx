@@ -2,14 +2,12 @@ import { type Guild, useGuildsState } from "@/states/guilds.ts"
 import {
   Field,
   FieldDescription,
-  FieldError,
   FieldGroup,
   FieldLabel,
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input.tsx"
-import { Switch } from "@/components/ui/switch.tsx"
 import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea.tsx"
 import { Button } from "@/components/ui/button.tsx"

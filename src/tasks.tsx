@@ -42,7 +42,7 @@ export function Tasks(props: {guild: Guild}) {
   const nowGuild = { // FIXME this is a mock
     id: "UNKNOWN",
     name: "tech team",
-    owner: useUsersState.getState().me,
+    owner: useUsersState.getState().me!,
     description: "A tech team for some developments.",
     member_count: 3,
   } satisfies Guild;
@@ -184,7 +184,7 @@ export function Tasks(props: {guild: Guild}) {
                   key={user[0]}
                   showCompletedAndPausedTasks={showCompletedAndPausedTasks}
                   user={user[1]}
-                  is_me={usersState.me.id === user[0]}
+                  is_me={usersState.me?.id === user[0]}
                   owned_tasks={owned}
                   participating_tasks={joined}
                   open_dialog={(user) => setTaskDialogState(user)}

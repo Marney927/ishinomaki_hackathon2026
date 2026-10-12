@@ -7,8 +7,9 @@ import { Tasks } from "@/tasks.tsx"
 import { GuildsSettings } from "@/guildsSettings.tsx"
 import type { Guild } from "@/states/guilds.ts"
 import { commonUser5 } from "@/mocks/tasks_mock.ts"
+import { NavMenu } from "@/components/navMenu.tsx"
 
-type View =
+export type View =
   {type: "home"} |
   {type: "auth"} |
   {type: "guildView", guild: Guild} |
@@ -30,25 +31,26 @@ export function App() {
   });
 
   return (
-    <main>
-      {nowView.type === "home" && (
-        <div>
-          <GuildsTable openGuild={(guild) => updateNowView({type: "guildConfig", guild: guild})} />
-        </div>
-      )}
-      {nowView.type === "auth" &&
-        <Login />
-      }
-      {nowView.type === "profile" && (
-        <Profile />
-      )}
-      {nowView.type === "guildView" && (
-        <Tasks guild={nowView.guild} />
-      )}
-      {nowView.type === "guildConfig" && (
-        <GuildsSettings guild={nowView.guild} />
-      )}
-    </main>
+    <div>
+      <NavMenu state={nowView} setView={updateNowView} />
+      <main>
+        {nowView.type === "home" && (
+          <div>
+            <GuildsTable
+              openGuild={(guild) =>
+                updateNowView({ type: "guildConfig", guild: guild })
+              }
+            />
+          </div>
+        )}
+        {nowView.type === "auth" && <Login />}
+        {nowView.type === "profile" && <Profile />}
+        {nowView.type === "guildView" && <Tasks guild={nowView.guild} />}
+        {nowView.type === "guildConfig" && (
+          <GuildsSettings guild={nowView.guild} />
+        )}
+      </main>
+    </div>
   )
 }
 

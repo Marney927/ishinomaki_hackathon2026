@@ -1,7 +1,7 @@
 import { create } from "zustand/react"
 
 export interface UsersState {
-  me: User,
+  me: User | null,
   update_name: (id: string, name: string) => Promise<void>,
 }
 

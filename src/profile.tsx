@@ -19,40 +19,50 @@ export function Profile() {
 
   return (
     <div className="m-6">
-      <FieldSet>
-        <FieldLegend>プロフィール設定</FieldLegend>
-        <FieldDescription>
-          アカウントの基本情報を管理できます。
-        </FieldDescription>
-        <FieldGroup className="">
-          <div className="grid grid-cols-3 divide-x gap-6">
-            <Field className="grid-item">
-              <div className="grid w-full place-items-center">
-                <UserAvatar className="h-30 w-30" user={usersState.me} />
-                <Button variant="outline" className="mt-3">
-                  <Camera />
-                  画像を変更
-                </Button>
-              </div>
-            </Field>
-            <Field className="grid-item col-span-2 h-full">
-              <div className="flex flex-col gap-2">
-                <FieldLabel htmlFor="name">表示名</FieldLabel>
-                <div className="flex gap-1">
-                  <Input
-                    id="name"
-                    autoComplete="off"
-                    placeholder={usersState.me.name}
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                  />
-                  <Button disabled={newUsername.length === 0} className="px-10" onClick={() => usersState.update_name(usersState.me.id, newUsername)}>変更</Button>
+      {usersState.me && (
+        <FieldSet>
+          <FieldLegend>プロフィール設定</FieldLegend>
+          <FieldDescription>
+            アカウントの基本情報を管理できます。
+          </FieldDescription>
+          <FieldGroup className="">
+            <div className="grid grid-cols-3 gap-6 divide-x">
+              <Field className="grid-item">
+                <div className="grid w-full place-items-center">
+                  <UserAvatar className="h-30 w-30" user={usersState.me} />
+                  <Button variant="outline" className="mt-3">
+                    <Camera />
+                    画像を変更
+                  </Button>
                 </div>
-              </div>
-            </Field>
-          </div>
-        </FieldGroup>
-      </FieldSet>
+              </Field>
+              <Field className="grid-item col-span-2 h-full">
+                <div className="flex flex-col gap-2">
+                  <FieldLabel htmlFor="name">表示名</FieldLabel>
+                  <div className="flex gap-1">
+                    <Input
+                      id="name"
+                      autoComplete="off"
+                      placeholder={usersState.me.name}
+                      value={newUsername}
+                      onChange={(e) => setNewUsername(e.target.value)}
+                    />
+                    <Button
+                      disabled={newUsername.length === 0}
+                      className="px-10"
+                      onClick={() =>
+                        usersState.me && usersState.update_name(usersState.me.id, newUsername)
+                      }
+                    >
+                      変更
+                    </Button>
+                  </div>
+                </div>
+              </Field>
+            </div>
+          </FieldGroup>
+        </FieldSet>
+      )}
     </div>
   )
 }

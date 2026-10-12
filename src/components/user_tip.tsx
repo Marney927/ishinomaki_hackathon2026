@@ -1,9 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx"
 import type { User } from "@/states/users.ts"
 
-export function UserTip(props: {user: User, className?: string}) {
+export function UserTip(props: {user: User, className?: string, onclick?: () => void}) {
   return (
-    <div className={`flex flex-row items-center h-10 ${props.className}`}>
+    <div className={`flex flex-row items-center h-10 ${props.className}`} onClick={props.onclick}>
       <UserAvatar user={props.user} />
       <div className="pl-1">{props.user.name}</div>
     </div>
