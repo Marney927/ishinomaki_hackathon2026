@@ -298,19 +298,36 @@ export const useGuildsState = create<GuildsState>((set, get) => ({
     if (error !== null) {
       // 更新エラー
       throw error;
-    } else {
-      // 正常に更新できたら配列も更新する
-      set((state) => ({
-        guilds: state.guilds.map((guild) =>
-          guild.id === id
-            ? { ...guild, member_count: guild.member_count - 1 }
-            : guild
-        )
-      }));
     }
+    // 正常に更新できたら配列も更新する
+    set((state) => ({
+      guilds: state.guilds.map((guild) =>
+        guild.id === id
+          ? { ...guild, member_count: guild.member_count - 1 }
+          : guild
+      )
+    }));
   },
 
-  deleteGuild: async (id: number) => {},
+  deleteGuild: async (id: number) => {
+    const supabase = createClient();
+    const { error } = await supabase.rpc(
+      "delete_guild",
+      {
+        p_guild_id: id,
+      }
+    );
+    if (error !== null) {
+      // 更新エラー
+      throw error;
+    }
+    // 正常に更新できたら配列から削除する
+    set((state) => ({
+      guilds: state.guilds.filter((guild) =>
+        guild.id !== id
+      )
+    }));
+  },
   
   getGuildInviteCode: async  (id: number) => {
     const supabase = createClient();
